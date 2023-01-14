@@ -12,12 +12,18 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity() {
 
     lateinit var newsList: RecyclerView
+    lateinit var myAdapter: NewsListAdapter
+    private var articles = mutableListOf<Article>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         newsList = findViewById(R.id.newsList)
+
+        myAdapter = NewsListAdapter(this, articles)
+        newsList.adapter = myAdapter
+        newsList.layoutManager = LinearLayoutManager(this)
 
         getNews()
     }
@@ -28,11 +34,8 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call<News>, response: Response<News>) {
                 Log.d("RetroResponse", response.body().toString())
 
-                val adapter =
-                    response.body()?.let { NewsListAdapter(this@MainActivity, it.articles) }
-
-                newsList.adapter = adapter
-                newsList.layoutManager = LinearLayoutManager(this@MainActivity)
+                response.body()?.let { articles.addAll(it.articles) }
+                myAdapter.notifyDataSetChanged()
             }
 
             override fun onFailure(call: Call<News>, t: Throwable) {
